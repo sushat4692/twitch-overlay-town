@@ -31,7 +31,7 @@ const main = async () => {
   await apiClient.eventSub.deleteAllSubscriptions();
   const middleware = new EventSubMiddleware({
     apiClient,
-    hostName: `localhost`,
+    hostName: process.env.TWITCH_PUBSUB_HOST || 'localhost',
     pathPrefix: "/twitch",
     secret,
     strictHostCheck: false,
@@ -69,6 +69,8 @@ const main = async () => {
         user_name: e.userName,
         user_display_name: e.userDisplayName,
       };
+
+      console.log(e);
 
       switch (e.rewardId) {
         case "10ec7ca9-763b-4cb6-948d-55c88f23f063":
