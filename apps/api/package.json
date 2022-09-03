@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon",
+    "build": "tsc src/index.ts --esModuleInterop --outDir dist",
     "run": "ts-node ./src/index.ts",
     "lint": "eslint ./src/**/*.ts"
   },
