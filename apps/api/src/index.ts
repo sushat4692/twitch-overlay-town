@@ -22,8 +22,8 @@ const secret = process.env.TWITCH_PUBSUB_SECRET || "";
 
 const main = async () => {
   const model = new RedisModel({
-    host: process.env.REDIS_HOST || '127.0.0.1',
-    port: Number(process.env.REDIS_PORT || '6379'),
+    host: process.env.REDIS_HOST || "127.0.0.1",
+    port: Number(process.env.REDIS_PORT || "6379"),
     username: process.env.REDIS_USERNAME,
     password: process.env.REDIS_PASSWORD,
   });
@@ -31,7 +31,7 @@ const main = async () => {
   await apiClient.eventSub.deleteAllSubscriptions();
   const middleware = new EventSubMiddleware({
     apiClient,
-    hostName: process.env.TWITCH_PUBSUB_HOST || 'localhost',
+    hostName: process.env.TWITCH_PUBSUB_HOST || "localhost",
     pathPrefix: "/twitch",
     secret,
     strictHostCheck: false,
@@ -46,10 +46,7 @@ const main = async () => {
   const io = new Server(server);
 
   io.on("connection", (socket) => {
-    console.log("a user connected");
-
     socket.on("list", async () => {
-      console.log("list");
       socket.emit("list", await model.getAll());
     });
   });
@@ -63,24 +60,25 @@ const main = async () => {
     // });
 
     // twitch event trigger add-redemption -f {from_id} -t {to_id} -F http://localhost:3000/twitch/event/channel.channel_points_custom_reward_redemption.add.{to_id} -s channel.channel_points_custom_reward_redemption.add.{to_id}.{secret} -i 10ec7ca9-763b-4cb6-948d-55c88f23f063
-    middleware.subscribeToChannelRedemptionAddEvents(process.env.TWITCH_USER_ID || '', async (e) => {
-      const resident: ResidentType = {
-        user_id: e.userId,
-        user_name: e.userName,
-        user_display_name: e.userDisplayName,
-      };
+    middleware.subscribeToChannelRedemptionAddEvents(
+      process.env.TWITCH_USER_ID || "",
+      async (e) => {
+        const resident: ResidentType = {
+          user_id: e.userId,
+          user_name: e.userName,
+          user_display_name: e.userDisplayName,
+        };
 
-      console.log(e);
+        switch (e.rewardId) {
+          case "10ec7ca9-763b-4cb6-948d-55c88f23f063":
+            await model.upsertResident(resident);
+            const result = await model.upsertBuilding(resident);
 
-      switch (e.rewardId) {
-        case "10ec7ca9-763b-4cb6-948d-55c88f23f063":
-          await model.upsertResident(resident);
-          const result = await model.upsertBuilding(resident);
-
-          io.sockets.emit("building_updated", result);
-          break;
+            io.sockets.emit("building_updated", result);
+            break;
+        }
       }
-    });
+    );
 
     console.log(`Example app listening on port ${port}`);
   });

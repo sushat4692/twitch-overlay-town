@@ -78,8 +78,6 @@ export class RedisModel {
             checkers.push(`building:${x + i}:${y + j}`);
           }
         }
-
-        console.log(checkers);
       } while (await this.redis.exists(checkers));
 
       return { x, y };

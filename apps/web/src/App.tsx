@@ -32,16 +32,18 @@ function App() {
     });
 
     socket.on("list", (residents: ResidentType[]) => {
-      setResidents(residents.map(resident => ({
-        user_id: Number(resident.user_id),
-        user_name: resident.user_name,
-        user_display_name: resident.user_display_name,
-        building_x: Number(resident.building_x),
-        building_y: Number(resident.building_y),
-        building_width: Number(resident.building_width),
-        building_height: Number(resident.building_height),
-        building_rank: Number(resident.building_rank),
-      })));
+      setResidents(
+        residents.map((resident) => ({
+          user_id: Number(resident.user_id),
+          user_name: resident.user_name,
+          user_display_name: resident.user_display_name,
+          building_x: Number(resident.building_x),
+          building_y: Number(resident.building_y),
+          building_width: Number(resident.building_width),
+          building_height: Number(resident.building_height),
+          building_rank: Number(resident.building_rank),
+        }))
+      );
     });
     setTimeout(() => {
       socket.emit("list");
@@ -79,7 +81,7 @@ function App() {
                 building_width: Number(resident.building_width),
                 building_height: Number(resident.building_height),
                 building_rank: Number(resident.building_rank),
-              }
+              },
             ];
           }
         })();
@@ -99,76 +101,81 @@ function App() {
     }));
   };
 
-  const handleDragEnd = useCallback((e: DragEndEvent) => {
-    const nextX = prevX.current + e.delta.x;
-    const nextY = prevY.current + e.delta.y;
-    const thresholdX = -(BlockSize * scale * BlockXLength) - WindowGap * 2 + width;
-    const thresholdY = -(BlockSize * scale * BlockYLength) - WindowGap * 2 + height;
+  const handleDragEnd = useCallback(
+    (e: DragEndEvent) => {
+      const nextX = prevX.current + e.delta.x;
+      const nextY = prevY.current + e.delta.y;
+      const thresholdX =
+        -(BlockSize * scale * BlockXLength) - WindowGap * 2 + width;
+      const thresholdY =
+        -(BlockSize * scale * BlockYLength) - WindowGap * 2 + height;
 
-    const { toX, isXAnimate } = (() => {
-      if (thresholdX < 0) {
-        if (nextX > 0) {
-          return {toX: 0, isXAnimate: true};
-        } else if (nextX < thresholdX) {
-          return { toX: thresholdX, isXAnimate: true };
-        }
-      } else {
-        if (nextX < 0) {
-          return {toX: 0, isXAnimate: true};
-        } else if (nextX > thresholdX) {
-          return {toX: thresholdX, isXAnimate: true};
-        }
-      }
-
-      return { toX: nextX, isXAnimate: false }
-    })()
-
-    const { toY, isYAnimate } = (() => {
-      if (thresholdY < 0) {
-        if (nextY > 0) {
-          return {toY: 0, isYAnimate: true};
-        } else if (nextY < thresholdY) {
-          return { toY: thresholdY, isYAnimate: true };
-        }
-      } else {
-        if (nextY < 0) {
-          return {toY: 0, isYAnimate: true};
-        } else if (nextY > thresholdY) {
-          return {toY: thresholdY, isYAnimate: true};
-        }
-      }
-
-      return { toY: nextY, isYAnimate: false }
-    })()
-
-    if (isXAnimate || isYAnimate) {
-      gsap
-        .to(
-          { x: nextX, y: nextY },
-          {
-            x: toX,
-            y: toY,
-            ease: "power2.out",
-            onUpdate: function () {
-              setWindowValue((prev) => ({
-                ...prev,
-                ...{
-                  x: this._targets[0].x,
-                  y: this._targets[0].y,
-                },
-              }));
-            },
+      const { toX, isXAnimate } = (() => {
+        if (thresholdX < 0) {
+          if (nextX > 0) {
+            return { toX: 0, isXAnimate: true };
+          } else if (nextX < thresholdX) {
+            return { toX: thresholdX, isXAnimate: true };
           }
-        )
-        .duration(0.3)
-        .play();
-    } else {
-      setWindowValue((prev) => ({
-        ...prev,
-        ...{ x: toX, y: toY },
-      }));
-    }
-  }, [scale, width, height]);
+        } else {
+          if (nextX < 0) {
+            return { toX: 0, isXAnimate: true };
+          } else if (nextX > thresholdX) {
+            return { toX: thresholdX, isXAnimate: true };
+          }
+        }
+
+        return { toX: nextX, isXAnimate: false };
+      })();
+
+      const { toY, isYAnimate } = (() => {
+        if (thresholdY < 0) {
+          if (nextY > 0) {
+            return { toY: 0, isYAnimate: true };
+          } else if (nextY < thresholdY) {
+            return { toY: thresholdY, isYAnimate: true };
+          }
+        } else {
+          if (nextY < 0) {
+            return { toY: 0, isYAnimate: true };
+          } else if (nextY > thresholdY) {
+            return { toY: thresholdY, isYAnimate: true };
+          }
+        }
+
+        return { toY: nextY, isYAnimate: false };
+      })();
+
+      if (isXAnimate || isYAnimate) {
+        gsap
+          .to(
+            { x: nextX, y: nextY },
+            {
+              x: toX,
+              y: toY,
+              ease: "power2.out",
+              onUpdate: function () {
+                setWindowValue((prev) => ({
+                  ...prev,
+                  ...{
+                    x: this._targets[0].x,
+                    y: this._targets[0].y,
+                  },
+                }));
+              },
+            }
+          )
+          .duration(0.3)
+          .play();
+      } else {
+        setWindowValue((prev) => ({
+          ...prev,
+          ...{ x: toX, y: toY },
+        }));
+      }
+    },
+    [scale, width, height]
+  );
 
   return (
     <DndContext
