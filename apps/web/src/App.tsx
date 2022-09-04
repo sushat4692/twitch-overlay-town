@@ -9,6 +9,7 @@ import { Draggable } from "./components/Draggable";
 import { AppStage } from "./components/AppStage";
 import { useWindowState } from "./state/Window";
 import { AppInterface } from "./components/AppInterface";
+import { Spin } from "antd";
 
 function App() {
   const [{ x, y, scale, width, height }, setWindowValue] = useWindowState();
@@ -17,6 +18,7 @@ function App() {
   const prevY = useRef(0);
   const [_, setResidents] = useResidentState();
   const inited = useRef(false);
+  const loaded = useRef(false);
 
   useEffect(() => {
     if (inited.current) {
@@ -44,6 +46,8 @@ function App() {
           building_rank: Number(resident.building_rank),
         }))
       );
+
+      loaded.current = true;
     });
     setTimeout(() => {
       socket.emit("list");
@@ -178,17 +182,19 @@ function App() {
   );
 
   return (
-    <DndContext
-      onDragStart={handleDragStart}
-      onDragMove={handleDragMove}
-      onDragEnd={handleDragEnd}
-    >
-      <Draggable>
-        <AppStage />
-      </Draggable>
+    <Spin tip="Loading..." size="large" spinning={!loaded.current}>
+      <DndContext
+        onDragStart={handleDragStart}
+        onDragMove={handleDragMove}
+        onDragEnd={handleDragEnd}
+      >
+        <Draggable>
+          <AppStage />
+        </Draggable>
 
-      <AppInterface />
-    </DndContext>
+        <AppInterface />
+      </DndContext>
+    </Spin>
   );
 }
 
