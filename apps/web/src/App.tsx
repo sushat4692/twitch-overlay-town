@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { DndContext, DragMoveEvent, DragEndEvent } from "@dnd-kit/core";
 import gsap from "gsap";
 import { useSocket } from "./contexts/Socket";
@@ -18,7 +18,7 @@ function App() {
   const prevY = useRef(0);
   const [_, setResidents] = useResidentState();
   const inited = useRef(false);
-  const loaded = useRef(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     if (inited.current) {
@@ -47,7 +47,7 @@ function App() {
         }))
       );
 
-      loaded.current = true;
+      setLoaded(true);
     });
     setTimeout(() => {
       socket.emit("list");
@@ -182,7 +182,7 @@ function App() {
   );
 
   return (
-    <Spin tip="Loading..." size="large" spinning={!loaded.current}>
+    <Spin tip="Loading..." size="large" spinning={!loaded}>
       <DndContext
         onDragStart={handleDragStart}
         onDragMove={handleDragMove}
