@@ -8,7 +8,11 @@ export const AppStage: React.FC = () => {
   const { width, height } = useWindowValue();
 
   return (
-    <BridgeStage width={width} height={height} options={{ backgroundAlpha: 0 }}>
+    <BridgeStage
+      width={width}
+      height={height}
+      options={{ backgroundAlpha: 0, antialias: false }}
+    >
       <Grid />
       <Resident />
     </BridgeStage>
