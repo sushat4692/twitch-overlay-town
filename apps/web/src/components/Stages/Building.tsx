@@ -11,7 +11,7 @@ type Props = {
   resident: ResidentType;
 };
 export const Building: React.FC<Props> = ({ resident }) => {
-  const { x, y, scale } = useWindowValue();
+  const { scale } = useWindowValue();
   const [_, setCurrent] = useCurrentState();
   const resetCurrent = useCurrentReset();
 
@@ -28,19 +28,17 @@ export const Building: React.FC<Props> = ({ resident }) => {
   }, [resident]);
 
   return (
-    <Container x={x} y={y}>
-      <Sprite
-        image={BuildingImage}
-        x={WindowGap + BlockSize * scale * resident.building_x}
-        y={WindowGap + BlockSize * scale * resident.building_y}
-        width={BlockSize * scale * resident.building_width}
-        height={BlockSize * scale * resident.building_height}
-        interactive={true}
-        click={handleClick}
-        mouseover={handleMouseOver}
-        mouseout={handleMouseOut}
-        mouseupoutside={handleMouseOut}
-      />
-    </Container>
+    <Sprite
+      image={BuildingImage}
+      x={WindowGap + BlockSize * scale * resident.building_x}
+      y={WindowGap + BlockSize * scale * resident.building_y}
+      width={BlockSize * scale * resident.building_width}
+      height={BlockSize * scale * resident.building_height}
+      interactive={true}
+      click={handleClick}
+      mouseover={handleMouseOver}
+      mouseout={handleMouseOut}
+      mouseupoutside={handleMouseOut}
+    />
   );
 };

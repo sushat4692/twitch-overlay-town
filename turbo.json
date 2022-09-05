@@ -5,6 +5,21 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
+    "api#build": {
+      "dependsOn": [
+        "^build",
+        "$PORT",
+        "$TWITCH_CLIENT_ID",
+        "$TWITCH_CLIENT_SECRET",
+        "$TWITCH_PUBSUB_SECRET",
+        "$TWITCH_PUBSUB_HOST",
+        "$TWITCH_USER_ID",
+        "$REDIS_HOST",
+        "$REDIS_PORT",
+        "$REDIS_USERNAME",
+        "$REDIS_PASSWORD"
+      ]
+    },
     "lint": {
       "outputs": []
     },

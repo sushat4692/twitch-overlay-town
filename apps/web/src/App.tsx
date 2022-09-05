@@ -34,19 +34,7 @@ function App() {
     });
 
     socket.on("list", (residents: ResidentType[]) => {
-      setResidents(
-        residents.map((resident) => ({
-          user_id: Number(resident.user_id),
-          user_name: resident.user_name,
-          user_display_name: resident.user_display_name,
-          building_x: Number(resident.building_x),
-          building_y: Number(resident.building_y),
-          building_width: Number(resident.building_width),
-          building_height: Number(resident.building_height),
-          building_rank: Number(resident.building_rank),
-        }))
-      );
-
+      setResidents(residents);
       setLoaded(true);
     });
     setTimeout(() => {
@@ -59,16 +47,7 @@ function App() {
           if (prev.some((r) => r.user_id === resident.user_id)) {
             return prev.map((r) => {
               if (r.user_id === resident.user_id) {
-                return {
-                  user_id: Number(resident.user_id),
-                  user_name: resident.user_name,
-                  user_display_name: resident.user_display_name,
-                  building_x: Number(resident.building_x),
-                  building_y: Number(resident.building_y),
-                  building_width: Number(resident.building_width),
-                  building_height: Number(resident.building_height),
-                  building_rank: Number(resident.building_rank),
-                };
+                return resident;
               } else {
                 return r;
               }
@@ -76,16 +55,7 @@ function App() {
           } else {
             return [
               ...prev,
-              {
-                user_id: Number(resident.user_id),
-                user_name: resident.user_name,
-                user_display_name: resident.user_display_name,
-                building_x: Number(resident.building_x),
-                building_y: Number(resident.building_y),
-                building_width: Number(resident.building_width),
-                building_height: Number(resident.building_height),
-                building_rank: Number(resident.building_rank),
-              },
+              resident,
             ];
           }
         })();

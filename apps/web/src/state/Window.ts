@@ -1,4 +1,6 @@
 import { atom, useRecoilValue, useRecoilState } from "recoil";
+import { WindowGap } from '../const/Window'
+import { BlockSize, BlockXLength, BlockYLength } from '../const/Town'
 
 type WindowContextType = {
   width: number;
@@ -13,8 +15,8 @@ const WindowContext = atom<WindowContextType>({
   default: {
     width: window.innerWidth,
     height: window.innerHeight,
-    x: 0,
-    y: 0,
+    x: -(BlockSize * BlockXLength + WindowGap * 2) / 2 + window.innerWidth / 2,
+    y: -(BlockSize * BlockYLength + WindowGap * 2) / 2 + window.innerHeight / 2,
     scale: 1,
   },
 });

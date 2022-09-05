@@ -6,12 +6,12 @@ import { BlockSize, BlockXLength, BlockYLength } from "../../const/Town";
 import { useWindowValue } from "../../state/Window";
 
 export const Grid: React.FC = () => {
-  const { x, y, scale } = useWindowValue();
+  const { scale } = useWindowValue();
 
   const draw = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
-      g.lineStyle({ width: 1, color: 0xdddddd });
+      g.lineStyle({ width: 1, color: 0xeeeeee });
 
       for (let x = 0; x < BlockXLength; x += 1) {
         for (let y = 0; y < BlockYLength; y += 1) {
@@ -27,5 +27,5 @@ export const Grid: React.FC = () => {
     [scale]
   );
 
-  return <Graphics x={x} y={y} draw={draw} />;
+  return <Graphics draw={draw} />;
 };

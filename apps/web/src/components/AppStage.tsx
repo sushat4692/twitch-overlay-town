@@ -3,9 +3,10 @@ import { useWindowValue } from "../state/Window";
 import { BridgeStage } from "./Stages/Bridge";
 import { Grid } from "./Stages/Grid";
 import { Resident } from "./Stages/Resident";
+import { Container } from '@inlet/react-pixi'
 
 export const AppStage: React.FC = () => {
-  const { width, height } = useWindowValue();
+  const { width, height, x, y } = useWindowValue();
 
   return (
     <BridgeStage
@@ -13,8 +14,10 @@ export const AppStage: React.FC = () => {
       height={height}
       options={{ backgroundAlpha: 0, antialias: false }}
     >
-      <Grid />
-      <Resident />
+      <Container x={x} y={y}>
+        <Grid />
+        <Resident />
+      </Container>
     </BridgeStage>
   );
 };
