@@ -3,11 +3,8 @@ import { Graphics } from "@inlet/react-pixi";
 import PIXI from "pixi.js";
 import { WindowGap } from "../../const/Window";
 import { BlockSize, BlockXLength, BlockYLength } from "../../const/Town";
-import { useWindowValue } from "../../state/Window";
 
 export const Grid: React.FC = () => {
-  const { scale } = useWindowValue();
-
   const draw = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
@@ -16,15 +13,15 @@ export const Grid: React.FC = () => {
       for (let x = 0; x < BlockXLength; x += 1) {
         for (let y = 0; y < BlockYLength; y += 1) {
           g.drawRect(
-            WindowGap + BlockSize * scale * x,
-            WindowGap + BlockSize * scale * y,
-            BlockSize * scale,
-            BlockSize * scale
+            WindowGap + BlockSize * x,
+            WindowGap + BlockSize * y,
+            BlockSize,
+            BlockSize
           );
         }
       }
     },
-    [scale]
+    []
   );
 
   return <Graphics draw={draw} />;

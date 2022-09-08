@@ -1,5 +1,5 @@
 export const configs = {
-    'port' : Number(process.env.PORT || 3000),
+    'port' : Number(process.env.PORT || 3001),
     'twitch_client_id' : process.env.TWITCH_CLIENT_ID || "",
     'twitch_client_secret' : process.env.TWITCH_CLIENT_SECRET || "",
     'twitch_pubsub_secret': process.env.TWITCH_PUBSUB_SECRET || "",

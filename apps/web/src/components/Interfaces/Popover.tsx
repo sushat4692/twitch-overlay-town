@@ -18,8 +18,8 @@ export const Popover: React.FC = () => {
     return {
       position: "absolute",
       transition: "0.3s left, 0.3s top, 0.3s width, 0.3s height",
-      left: current.building_x * BlockSize * scale + WindowGap + x,
-      top: current.building_y * BlockSize * scale + WindowGap + y,
+      left: current.building_x * BlockSize * scale + WindowGap * scale + x,
+      top: current.building_y * BlockSize * scale + WindowGap * scale + y,
       width: current.building_width * BlockSize * scale,
       height: current.building_height * BlockSize * scale,
       pointerEvents: "none",

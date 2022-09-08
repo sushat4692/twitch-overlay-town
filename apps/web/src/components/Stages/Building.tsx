@@ -3,7 +3,6 @@ import { Sprite, Container } from "@inlet/react-pixi";
 import { ResidentType } from "../../state/Resident";
 import { WindowGap } from "../../const/Window";
 import { BlockSize } from "../../const/Town";
-import { useWindowValue } from "../../state/Window";
 import { useCurrentReset, useCurrentState } from "../../state/Current";
 import BuildingImage from "../../assets/Building01.png";
 
@@ -11,7 +10,6 @@ type Props = {
   resident: ResidentType;
 };
 export const Building: React.FC<Props> = ({ resident }) => {
-  const { scale } = useWindowValue();
   const [_, setCurrent] = useCurrentState();
   const resetCurrent = useCurrentReset();
 
@@ -30,10 +28,10 @@ export const Building: React.FC<Props> = ({ resident }) => {
   return (
     <Sprite
       image={BuildingImage}
-      x={WindowGap + BlockSize * scale * resident.building_x}
-      y={WindowGap + BlockSize * scale * resident.building_y}
-      width={BlockSize * scale * resident.building_width}
-      height={BlockSize * scale * resident.building_height}
+      x={WindowGap + BlockSize * resident.building_x}
+      y={WindowGap + BlockSize * resident.building_y}
+      width={BlockSize * resident.building_width}
+      height={BlockSize * resident.building_height}
       interactive={true}
       click={handleClick}
       mouseover={handleMouseOver}
