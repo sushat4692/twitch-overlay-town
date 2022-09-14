@@ -4,7 +4,7 @@ import { ZoomInOutlined, ZoomOutOutlined } from "@ant-design/icons";
 import { useWindowState } from "../../state/Window";
 import gsap from "gsap";
 import { BlockSize, BlockXLength, BlockYLength } from "../../const/Town";
-import { WindowGap } from "../../const/Window";
+import { getThresholdX, getThresholdY } from "../../util/Stage";
 
 const scaleDiff = 0.4;
 
@@ -24,8 +24,7 @@ export const Buttons: React.FC = () => {
       })();
 
       const toX = (() => {
-        const thresholdX =
-          -(BlockSize * nextVal * BlockXLength) - WindowGap * 2 + width;
+        const thresholdX = getThresholdX(nextVal, width);
         const nextX =
           x +
           (BlockSize * scale * BlockXLength -
@@ -49,8 +48,7 @@ export const Buttons: React.FC = () => {
         return nextX;
       })();
       const toY = (() => {
-        const thresholdY =
-          -(BlockSize * nextVal * BlockYLength) - WindowGap * 2 + height;
+        const thresholdY = getThresholdY(nextVal, height);
         const nextY =
           y +
           (BlockSize * scale * BlockYLength -

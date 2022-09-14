@@ -1,6 +1,6 @@
 import React from "react";
-import { useResidentValue } from "../../state/Resident";
-import { Building } from "./Building";
+import { useResidentValue } from "@/state/Resident";
+import { Building } from "@/components/Stages/Building";
 
 export const Resident: React.FC = () => {
   const residents = useResidentValue();

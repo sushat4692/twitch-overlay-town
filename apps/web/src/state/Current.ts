@@ -4,7 +4,7 @@ import {
   useRecoilState,
   useResetRecoilState,
 } from "recoil";
-import { ResidentType } from "./Resident";
+import { ResidentType } from "@/state/Resident";
 
 const CurrentContext = atom<ResidentType | null>({
   key: "current",

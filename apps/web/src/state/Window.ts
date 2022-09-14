@@ -1,6 +1,6 @@
 import { atom, useRecoilValue, useRecoilState } from "recoil";
-import { WindowGap } from '../const/Window'
-import { BlockSize, BlockXLength, BlockYLength } from '../const/Town'
+import { WindowGap } from "@/const/Window";
+import { BlockSize, BlockXLength, BlockYLength } from "@/const/Town";
 
 type WindowContextType = {
   width: number;

@@ -1,8 +1,8 @@
 import React from "react";
 import { render } from "react-dom";
-import "./index.css";
-import App from "./App";
-import { SocketProvider } from "./contexts/Socket";
+import "@/index.css";
+import App from "@/App";
+import { SocketProvider } from "@/contexts/Socket";
 import { RecoilRoot } from "recoil";
 import "uno.css";
 import "@unocss/reset/tailwind.css";

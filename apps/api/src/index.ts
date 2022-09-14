@@ -8,7 +8,7 @@ import { useServer } from "./server";
 
 const main = async () => {
   const middleware = await prepareMiddleware();
-  const {app, server, prepareRequestWithSocket} = await useServer();
+  const { app, server, prepareRequestWithSocket } = await useServer();
 
   await middleware.apply(app);
   const io = useSocket(app, server);

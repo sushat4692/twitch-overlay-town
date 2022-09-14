@@ -1,7 +1,7 @@
 import { Express } from "express";
-import { Server as HttpServer } from 'http';
+import { Server as HttpServer } from "http";
 import { Server } from "socket.io";
-import { model } from './models'
+import { model } from "./models";
 
 export const useSocket = (app: Express, server: HttpServer) => {
   const io = new Server(server);
@@ -13,4 +13,4 @@ export const useSocket = (app: Express, server: HttpServer) => {
   });
 
   return io;
-}
+};

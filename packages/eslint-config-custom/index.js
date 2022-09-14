@@ -2,17 +2,15 @@ module.exports = {
   extends: [
     "turbo",
     "plugin:@typescript-eslint/recommended",
-    "prettier"
+    "plugin:prettier/recommended",
   ],
-  plugins: [
-    "@typescript-eslint"
-  ],
+  plugins: ["@typescript-eslint"],
   parser: "@typescript-eslint/parser",
   parserOptions: {
-    "sourceType": "module",
-    "ecmaFeatures": {
-      "jsx": true
-    }
+    sourceType: "module",
+    ecmaFeatures: {
+      jsx: true,
+    },
   },
   rules: {
     "react/jsx-key": "off",

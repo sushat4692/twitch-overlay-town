@@ -1,10 +1,10 @@
 import React, { useMemo } from "react";
 import { Card } from "antd";
 
-import { useCurrentValue } from "../../state/Current";
-import { useWindowValue } from "../../state/Window";
-import { BlockSize } from "../../const/Town";
-import { WindowGap } from "../../const/Window";
+import { useCurrentValue } from "@/state/Current";
+import { useWindowValue } from "@/state/Window";
+import { BlockSize } from "@/const/Town";
+import { WindowGap } from "@/const/Window";
 
 export const Popover: React.FC = () => {
   const current = useCurrentValue();

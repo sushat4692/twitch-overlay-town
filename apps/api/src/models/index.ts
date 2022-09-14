@@ -1,7 +1,7 @@
 import Redis, { ChainableCommander, RedisOptions } from "ioredis";
 import { configs } from "../lib/config";
 import { range } from "../lib/random";
-import { BlockXLength, BlockYLength } from '../const/Town'
+import { BlockXLength, BlockYLength } from "../const/Town";
 
 export type ResidentType = {
   user_id: number | string;
@@ -26,7 +26,7 @@ class RedisModel {
       user_id: Number(resident.user_id),
       user_name: resident.user_name,
       user_display_name: resident.user_display_name,
-    }
+    };
 
     if (resident.building_x) {
       result.building_x = Number(resident.building_x);
@@ -64,30 +64,37 @@ class RedisModel {
       }
 
       const user_id = List[i];
-      Residents.push(this.convertValue({
-        ...{ user_id },
-        ...(result as ResidentType),
-      }));
+      Residents.push(
+        this.convertValue({
+          ...{ user_id },
+          ...(result as ResidentType),
+        })
+      );
     });
 
     return Residents;
   }
 
   async resetPosition() {
-    const keis = await this.redis.keys('building:*')
+    const keis = await this.redis.keys("building:*");
 
     // 現状のフラグを一旦削除
     const delPipeline = this.redis.pipeline();
-    keis.map(key => {
+    keis.map((key) => {
       delPipeline.del(key);
-    })
+    });
     await delPipeline.exec();
 
     // 作成し直し
     const createPipeline = this.redis.pipeline();
-    const residents = await this.getAll()
+    const residents = await this.getAll();
     for (const resident of residents) {
-      if (!resident.building_x || !resident.building_y || !resident.building_width || !resident.building_height) {
+      if (
+        !resident.building_x ||
+        !resident.building_y ||
+        !resident.building_width ||
+        !resident.building_height
+      ) {
         continue;
       }
 
@@ -106,6 +113,40 @@ class RedisModel {
     await this.redis.flushdb();
   }
 
+  async shuffle() {
+    {
+      const keis = await this.redis.keys("building:*");
+
+      // Delete building positions
+      const pipeline = this.redis.pipeline();
+      keis.map((key) => pipeline.del(key));
+      await pipeline.exec();
+    }
+
+    {
+      const keis = await this.redis.keys("resident:*");
+
+      for (const key of keis) {
+        const resident = this.convertValue(
+          (await this.redis.hgetall(key)) as any
+        );
+        const position = await this.getNeighborRandomPosition(
+          resident.building_width || 3,
+          resident.building_height || 3
+        );
+
+        if (!position) {
+          continue;
+        }
+
+        const pipeline = this.redis.pipeline();
+        pipeline.hset(key, "building_x", position.x);
+        pipeline.hset(key, "building_y", position.y);
+        await pipeline.exec().catch((e) => console.error(e));
+      }
+    }
+  }
+
   async upsertResident(resident: ResidentType) {
     await this.redis.sadd("residents", resident.user_id);
     await this.redis.hset(`resident:${resident.user_id}`, {
@@ -114,7 +155,13 @@ class RedisModel {
     });
   }
 
-  private fillTargetPosition(pipeline: ChainableCommander, x: number, y: number, width: number, height: number) {
+  private fillTargetPosition(
+    pipeline: ChainableCommander,
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  ) {
     for (let i = 0; i < width; i += 1) {
       for (let j = 0; j < height; j += 1) {
         pipeline.set(`building:${x + i}:${y + j}`, 1);
@@ -151,10 +198,20 @@ class RedisModel {
     return position;
   }
 
-  private checkPositionBlank(positions: {x: number, y: number}[], x: number, y: number, width: number, height: number) {
+  private checkPositionBlank(
+    positions: { x: number; y: number }[],
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  ) {
     for (let i = 0; i < width; i += 1) {
       for (let j = 0; j < height; j += 1) {
-        if (positions.some(position => position.x === x + i && position.y === y + j)) {
+        if (
+          positions.some(
+            (position) => position.x === x + i && position.y === y + j
+          )
+        ) {
           return false;
         }
       }
@@ -164,25 +221,28 @@ class RedisModel {
 
   private async getNeighborPosition(width: number, height: number) {
     const position = await (async () => {
-      const keis = await this.redis.keys('building:*')
+      const keis = await this.redis.keys("building:*");
 
       // 一つも建物がない場合は中央を取る
       if (!keis.length) {
         return {
-          x: Math.round((BlockXLength / 2) - (width / 2)),
-          y: Math.round((BlockYLength / 2) - (height / 2)),
-        }
+          x: Math.round(BlockXLength / 2 - width / 2),
+          y: Math.round(BlockYLength / 2 - height / 2),
+        };
       }
 
-      const residents = await this.getAll()
-      const targets: {x: number, y: number}[] = [];
-      const positions = keis.map(key => {
-        const [_, x, y] = key.split(':');
-        return {x: Number(x), y: Number(y)};
+      const residents = await this.getAll();
+      const targets: { x: number; y: number }[] = [];
+      const positions = keis.map((key) => {
+        const [_, x, y] = key.split(":");
+        return { x: Number(x), y: Number(y) };
       });
 
-      residents.map(resident => {
-        if (resident.building_x === undefined || resident.building_y === undefined) {
+      residents.map((resident) => {
+        if (
+          resident.building_x === undefined ||
+          resident.building_y === undefined
+        ) {
           return;
         }
         const x = resident.building_x;
@@ -196,13 +256,15 @@ class RedisModel {
             x + i <= BlockXLength - width &&
             y + j >= 0 &&
             y + j <= BlockYLength - height &&
-            !targets.some(position => position.x === x + i && position.y === y + j) &&
+            !targets.some(
+              (position) => position.x === x + i && position.y === y + j
+            ) &&
             this.checkPositionBlank(positions, x + i, y + j, width, height)
           ) {
             targets.push({
               x: x + i,
               y: y + j,
-            })
+            });
           }
         }
 
@@ -214,13 +276,15 @@ class RedisModel {
             x + i <= BlockXLength - width &&
             y + j >= 0 &&
             y + j <= BlockYLength - height &&
-            !targets.some(position => position.x === x + i && position.y === y + j) &&
+            !targets.some(
+              (position) => position.x === x + i && position.y === y + j
+            ) &&
             this.checkPositionBlank(positions, x + i, y + j, width, height)
           ) {
             targets.push({
               x: x + i,
               y: y + j,
-            })
+            });
           }
         }
       });
@@ -231,7 +295,7 @@ class RedisModel {
 
       const index = range(0, targets.length - 1);
       return targets[index];
-    })()
+    })();
 
     if (!position) {
       return false;
@@ -246,23 +310,23 @@ class RedisModel {
 
   private async getNeighborRandomPosition(width: number, height: number) {
     const position = await (async () => {
-      const keis = await this.redis.keys('building:*')
+      const keis = await this.redis.keys("building:*");
 
       // 一つも建物がない場合は中央を取る
       if (!keis.length) {
         return {
-          x: Math.round((BlockXLength / 2) - (width / 2)),
-          y: Math.round((BlockYLength / 2) - (height / 2)),
-        }
+          x: Math.round(BlockXLength / 2 - width / 2),
+          y: Math.round(BlockYLength / 2 - height / 2),
+        };
       }
 
-      const targets: {x: number, y: number}[] = [];
-      const positions = keis.map(key => {
-        const [_, x, y] = key.split(':');
-        return {x: Number(x), y: Number(y)};
+      const targets: { x: number; y: number }[] = [];
+      const positions = keis.map((key) => {
+        const [_, x, y] = key.split(":");
+        return { x: Number(x), y: Number(y) };
       });
 
-      positions.map(({x, y}) => {
+      positions.map(({ x, y }) => {
         for (const i of [-width, 1]) {
           for (let j = -height + 1; j < 1; j += 1) {
             if (
@@ -270,13 +334,15 @@ class RedisModel {
               x + i <= BlockXLength - width &&
               y + j >= 0 &&
               y + j <= BlockYLength - height &&
-              !targets.some(position => position.x === x + i && position.y === y + j) &&
+              !targets.some(
+                (position) => position.x === x + i && position.y === y + j
+              ) &&
               this.checkPositionBlank(positions, x + i, y + j, width, height)
             ) {
               targets.push({
                 x: x + i,
                 y: y + j,
-              })
+              });
             }
           }
         }
@@ -288,13 +354,15 @@ class RedisModel {
               x + i <= BlockXLength - width &&
               y + j >= 0 &&
               y + j <= BlockYLength - height &&
-              !targets.some(position => position.x === x + i && position.y === y + j) &&
+              !targets.some(
+                (position) => position.x === x + i && position.y === y + j
+              ) &&
               this.checkPositionBlank(positions, x + i, y + j, width, height)
             ) {
               targets.push({
                 x: x + i,
                 y: y + j,
-              })
+              });
             }
           }
         }
@@ -306,7 +374,7 @@ class RedisModel {
 
       const index = range(0, targets.length - 1);
       return targets[index];
-    })()
+    })();
 
     if (!position) {
       return false;
@@ -323,7 +391,7 @@ class RedisModel {
     const key = `resident:${resident.user_id}`;
 
     if (!(await this.redis.hexists(key, "building_x"))) {
-      const position = await this.getNeighborPosition(3, 3);
+      const position = await this.getNeighborRandomPosition(3, 3);
       if (!position) {
         return false;
       }
@@ -361,4 +429,4 @@ export const model = new RedisModel({
   port: configs.redis_port,
   username: configs.redis_username,
   password: configs.redis_password,
-})
+});
