@@ -115,6 +115,32 @@ class RedisModel {
     await this.redis.flushdb();
   }
 
+  async fixSize() {
+    const keis = await this.redis.keys("resident:*");
+
+    const pipeline = this.redis.pipeline();
+    for (const key of keis) {
+      const resident = this.convertValue(
+        (await this.redis.hgetall(key)) as any
+      );
+
+      if (!resident.building_rank) {
+        continue;
+      }
+
+      resident.building_width = 2;
+      resident.building_height = 2;
+      if (resident.building_rank >= 5) {
+        resident.building_width = 3;
+        resident.building_height = 3;
+      }
+
+      pipeline.hset(key, "building_width", resident.building_width);
+      pipeline.hset(key, "building_height", resident.building_height);
+    }
+    await pipeline.exec().catch((e) => console.error(e));
+  }
+
   async shuffle() {
     {
       const keis = await this.redis.keys("building:*");

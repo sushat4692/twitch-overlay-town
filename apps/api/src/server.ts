@@ -23,6 +23,19 @@ export const useServer = async () => {
   });
 
   const prepareRequestWithSocket = (io: Server) => {
+    app.post("/fixsize", async (req, res) => {
+      if (
+        req.headers.authorization !== `Bearer ${configs.twitch_pubsub_secret}`
+      ) {
+        return res.json({ error: true, message: `Not matched secret` });
+      }
+
+      await model.fixSize();
+      await model.shuffle();
+      io.emit("list", await model.getAll());
+      return res.json({ error: false });
+    });
+
     app.post("/shuffle", async (req, res) => {
       if (
         req.headers.authorization !== `Bearer ${configs.twitch_pubsub_secret}`
