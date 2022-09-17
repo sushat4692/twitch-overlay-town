@@ -6,6 +6,7 @@ import { Block } from "@/components/Stages/Block";
 import { Resident } from "@/components/Stages/Resident";
 import { BlockXLength, BlockYLength } from "@/const/Town";
 import { Container } from "@inlet/react-pixi";
+import { Cloud } from "./Stages/Cloud";
 
 export const AppStage: React.FC = () => {
   const { width, height, scale, x, y } = useWindowValue();
@@ -36,6 +37,7 @@ export const AppStage: React.FC = () => {
         ))}
 
         <Resident />
+        <Cloud />
       </Container>
     </BridgeStage>
   );

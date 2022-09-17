@@ -21,7 +21,9 @@ class RedisModel {
     this.redis = options ? new Redis(options) : new Redis();
   }
 
-  private convertValue(resident: ResidentType): ResidentType {
+  private convertValue(
+    resident: Record<string, string> | ResidentType
+  ): ResidentType {
     const result: ResidentType = {
       user_id: Number(resident.user_id),
       user_name: resident.user_name,
@@ -391,7 +393,7 @@ class RedisModel {
     const key = `resident:${resident.user_id}`;
 
     if (!(await this.redis.hexists(key, "building_x"))) {
-      const position = await this.getNeighborRandomPosition(3, 3);
+      const position = await this.getNeighborRandomPosition(2, 2);
       if (!position) {
         return false;
       }
@@ -399,22 +401,135 @@ class RedisModel {
       const pipeline = this.redis.pipeline();
       pipeline.hsetnx(key, "building_x", position.x);
       pipeline.hsetnx(key, "building_y", position.y);
-      pipeline.hsetnx(key, "building_width", 3);
-      pipeline.hsetnx(key, "building_height", 3);
+      pipeline.hsetnx(key, "building_width", 2);
+      pipeline.hsetnx(key, "building_height", 2);
       pipeline.hsetnx(key, "building_rank", 0);
       await pipeline.exec().catch((e) => console.error(e));
     }
 
-    const pipeline = this.redis.pipeline();
-    pipeline.hincrby(key, "building_rank", 1);
-    pipeline.hgetall(key);
-    const response = await pipeline.exec().catch((e) => console.error(e));
+    const current = this.convertValue(await this.redis.hgetall(key));
+    const response = await (async () => {
+      if (
+        current.building_x === undefined ||
+        current.building_y === undefined ||
+        current.building_rank === undefined ||
+        current.building_width === undefined ||
+        current.building_height === undefined
+      ) {
+        return false;
+      }
+      current.building_rank += 1;
+
+      let changeSize = false;
+      const prevWidth = current.building_width;
+      const prevHeight = current.building_height;
+
+      // Change building width/height depends on rank
+      if (current.building_rank >= 5) {
+        current.building_width = 3;
+        current.building_height = 3;
+        changeSize = true;
+      }
+
+      // If change the size, need to move
+      if (changeSize) {
+        // Check new size
+        const exists = await (async () => {
+          if (
+            current.building_x === undefined ||
+            current.building_y === undefined ||
+            current.building_width === undefined ||
+            current.building_height === undefined
+          ) {
+            return false;
+          }
+
+          const keis: string[] = [];
+          for (let i = 0; i < current.building_width - prevWidth; i += 1) {
+            for (let j = 0; j < current.building_height - prevHeight; j += 1) {
+              keis.push(
+                `building:${current.building_x + prevWidth + i}:${
+                  current.building_y + prevHeight + i
+                }`
+              );
+            }
+          }
+
+          return await this.redis.exists(keis);
+        })();
+
+        if (exists === false) {
+          return false;
+        }
+
+        if (exists > 0) {
+          // Remove current positions' flag
+          const removePipeline = this.redis.pipeline();
+          for (let i = 0; i < prevWidth; i += 1) {
+            for (let j = 0; j < prevHeight; j += 1) {
+              removePipeline.del(
+                `building:${current.building_x + i}:${current.building_y + j}`
+              );
+            }
+          }
+          await removePipeline.exec();
+
+          // Get new position
+          const position = await this.getNeighborRandomPosition(
+            current.building_width,
+            current.building_height
+          );
+          if (!position) {
+            return false;
+          }
+
+          current.building_x = position.x;
+          current.building_y = position.y;
+        } else {
+          const pipeline = this.redis.pipeline();
+          this.fillTargetPosition(
+            pipeline,
+            current.building_x,
+            current.building_y,
+            current.building_width,
+            current.building_height
+          );
+          await pipeline.exec();
+        }
+
+        const pipeline = this.redis.pipeline();
+        pipeline.hset(key, "building_rank", current.building_rank);
+        pipeline.hset(key, "building_x", current.building_x);
+        pipeline.hset(key, "building_y", current.building_y);
+        pipeline.hset(key, "building_width", current.building_width);
+        pipeline.hset(key, "building_height", current.building_height);
+        pipeline.hgetall(key);
+        const response = await pipeline.exec().catch((e) => console.error(e));
+
+        if (!response) {
+          return false;
+        }
+
+        return response[5];
+      } else {
+        const pipeline = this.redis.pipeline();
+        pipeline.hset(key, "building_rank", current.building_rank);
+        pipeline.hgetall(key);
+        const response = await pipeline.exec().catch((e) => console.error(e));
+
+        if (!response) {
+          return false;
+        }
+
+        return response[1];
+      }
+    })();
 
     if (!response) {
       return false;
     }
 
-    const [err, result] = response[1];
+    const [err, result] = response;
     if (err !== null) {
       console.error(err);
       return false;

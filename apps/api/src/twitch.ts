@@ -35,7 +35,6 @@ export const useTwitchPubSub = async (
   //   console.log(e.userName);
   // });
 
-  // twitch event trigger add-redemption -f {from_id} -t {to_id} -F http://localhost:3000/twitch/event/channel.channel_points_custom_reward_redemption.add.{to_id} -s channel.channel_points_custom_reward_redemption.add.{to_id}.{secret} -i 10ec7ca9-763b-4cb6-948d-55c88f23f063
   middleware.subscribeToChannelRedemptionAddEvents(
     configs.twitch_user_id,
     async (e) => {
@@ -49,6 +48,9 @@ export const useTwitchPubSub = async (
         case "10ec7ca9-763b-4cb6-948d-55c88f23f063":
           await model.upsertResident(resident);
           const result = await model.upsertBuilding(resident);
+          if (!result) {
+            console.error(`Failed to build`);
+          }
 
           io.sockets.emit("building_updated", result);
           break;
